@@ -7,23 +7,27 @@ A comprehensive Learning Management System built with Vue.js frontend and Larave
 ### For Students
 - View enrolled courses only
 - Access course materials and content
+- Watch video content with progress tracking
 - Take quizzes and view results
 - Participate in course forums
 - View earned certificates
-- Track course progress
+- Track course progress (videos and quizzes)
 
 ### For Teachers
 - Manage assigned courses
-- Create and manage quizzes
-- View student enrollments
-- Monitor student progress
+- Create and manage quizzes with dynamic question options
+- Add video content from YouTube
+- View student video watch progress and analytics
+- View student enrollments and quiz attempts
+- Monitor student progress with detailed analytics
 - Participate in course forums
 
 ### For Admins
 - Create and manage all courses
 - Assign courses to teachers
-- View all quizzes across courses
+- View all quizzes and videos across courses
 - Monitor system-wide statistics
+- View student analytics for all courses
 - Manage users (via Student Management System integration)
 
 ## 🛠️ Tech Stack
@@ -181,6 +185,30 @@ npm run dev
 
 **Important**: Make sure the proxy target in `vite.config.js` matches your Laravel backend port (default: 8000).
 
+## 🔧 Maintenance Commands
+
+### Format Titles and Descriptions
+
+To update all existing quiz and video titles and descriptions to Title Case format:
+
+```bash
+cd laravel-backend
+
+# Preview changes (dry run - no changes will be made)
+php artisan format:titles-descriptions --dry-run
+
+# Apply changes to all existing records
+php artisan format:titles-descriptions
+```
+
+This command will:
+- Format all quiz titles and descriptions to Title Case
+- Format all video titles and descriptions to Title Case
+- Show a summary of what was updated
+- Use `--dry-run` flag to preview changes before applying them
+
+**Note:** New quizzes and videos created after implementing the Title Case formatter will automatically have their titles and descriptions formatted. This command is only needed to update existing records.
+
 ## 📚 API Endpoints
 
 ### Authentication
@@ -193,9 +221,9 @@ npm run dev
 ### Courses
 - `GET /api/courses` - List courses (filtered by role)
 - `GET /api/courses/{id}` - Get course details
-- `POST /api/courses` - Create course (admin only)
 - `PUT /api/courses/{id}` - Update course (teacher/admin)
 - `DELETE /api/courses/{id}` - Delete course (teacher/admin)
+- **Note:** Courses are created and managed in the Student Management System (SMS), not in the LMS
 
 ### Enrollments
 - `GET /api/enrollments/my-courses` - Get student's enrolled courses
@@ -203,9 +231,17 @@ npm run dev
 
 ### Quizzes
 - `POST /api/quizzes` - Create quiz (teacher only)
-- `GET /api/quizzes/course/{courseId}` - Get quizzes for a course
-- `GET /api/quizzes/{id}` - Get quiz details
+- `GET /api/quizzes/course/{courseId}` - Get quizzes for a course (includes student attempts if student)
+- `GET /api/quizzes/{id}` - Get quiz details (role-based: students see questions only, teachers/admins see answers)
 - `POST /api/quizzes/{id}/submit` - Submit quiz answers (student only)
+
+### Videos
+- `POST /api/videos` - Create video content (teacher only)
+- `GET /api/videos/course/{courseId}` - Get videos for a course
+- `GET /api/videos/{id}` - Get video details with student progress
+- `POST /api/videos/{id}/watch-progress` - Update video watch progress (student only)
+- `GET /api/videos/course/{courseId}/progress` - Get student's video progress for a course
+- `GET /api/videos/{id}/analytics` - Get video analytics and student watch statistics (teacher/admin only)
 
 ### Forums
 - `GET /api/forums/course/{courseId}/topics` - Get forum topics
@@ -219,16 +255,32 @@ npm run dev
 ## 🔐 Authentication & Authorization
 
 ### User Roles
-- **Student**: Can view enrolled courses, take quizzes, participate in forums
-- **Teacher**: Can manage assigned courses, create quizzes, view students
-- **Admin**: Can manage all courses, view all data, assign courses to teachers
+- **Student**: Can view enrolled courses, watch videos, take quizzes, participate in forums, track progress
+- **Teacher**: Can manage assigned courses, create quizzes and videos, view student analytics and progress
+- **Admin**: Can manage all courses, view all data, assign courses to teachers, view system-wide analytics
 
 ### Access Control
 - Students can only see courses they are enrolled in
 - Teachers can only see and manage their own courses
 - Admins can see all courses and manage everything
 - Quiz creation is restricted to teachers only
-- Course creation is restricted to admins only
+- Video creation is restricted to teachers only
+- Course creation is restricted to admins only (via Student Management System)
+- Students can only submit quizzes (teachers/admins can review)
+- Students can only track video watch progress (teachers/admins can view analytics)
+
+## 📝 Naming Conventions
+
+### Title Case Formatting
+All quiz and video titles and descriptions are automatically formatted to Title Case:
+- **Titles**: First letter of each word is capitalized
+- **Descriptions**: Each sentence is formatted to Title Case
+- Applies automatically when creating new content
+- Use `php artisan format:titles-descriptions` to update existing records
+
+Example:
+- Input: `"introduction to javascript"`
+- Output: `"Introduction To Javascript"`
 
 ## 📁 Project Structure
 
@@ -268,6 +320,8 @@ lms/
 - `quizzes` - Quiz information
 - `quiz_questions` - Quiz questions with options
 - `quiz_attempts` - Student quiz submissions and scores
+- `video_content` - Video learning content (YouTube videos)
+- `video_watch_progress` - Student video watch time tracking
 - `forum_topics` - Forum discussion topics
 - `forum_replies` - Forum topic replies
 - `certificates` - Student certificates (optional)
@@ -277,7 +331,7 @@ lms/
 ### For Administrators
 
 1. **Login** with admin credentials
-2. **Create Courses** from the "Create Course" link in navigation
+2. **Create Courses** in the Student Management System (SMS) - courses are not created in the LMS
 3. **Assign Teachers** to courses (via database or Student Management System)
 4. **Monitor** system statistics on the dashboard
 

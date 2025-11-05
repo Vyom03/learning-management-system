@@ -27,12 +27,6 @@ const routes = [
     meta: { requiresAuth: false }
   },
   {
-    path: '/create-course',
-    name: 'CreateCourse',
-    component: () => import('../views/CreateCourse.vue'),
-    meta: { requiresAuth: true, roles: ['admin'] }
-  },
-  {
     path: '/quizzes/:courseId/create',
     name: 'CreateQuiz',
     component: () => import('../views/CreateQuiz.vue'),
@@ -55,6 +49,18 @@ const routes = [
     name: 'Certificates',
     component: () => import('../views/Certificates.vue'),
     meta: { requiresAuth: true, roles: ['student'] }
+  },
+  {
+    path: '/videos/:courseId/create',
+    name: 'CreateVideoContent',
+    component: () => import('../views/CreateVideoContent.vue'),
+    meta: { requiresAuth: true, roles: ['teacher'] }
+  },
+  {
+    path: '/videos/:id',
+    name: 'VideoDetail',
+    component: () => import('../views/VideoDetail.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

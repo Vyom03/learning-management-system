@@ -2,16 +2,8 @@
   <div class="min-h-screen bg-gray-100">
     <Navbar />
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="flex justify-between items-center mb-6">
+      <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-900">{{ authStore.userRole === 'student' ? 'My Enrolled Courses' : authStore.userRole === 'teacher' ? 'My Courses' : 'All Courses' }}</h1>
-        <div v-if="authStore.isAuthenticated && authStore.userRole === 'admin'">
-          <router-link
-            to="/create-course"
-            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold text-xs text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 uppercase tracking-widest transition"
-          >
-            Create Course
-          </router-link>
-        </div>
       </div>
 
       <div v-if="loading" class="text-center py-12">

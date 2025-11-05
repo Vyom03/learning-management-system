@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\TitleFormatter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -42,11 +43,15 @@ class QuizController extends Controller
                 return response()->json(['error' => 'You can only create quizzes for your own courses'], 403);
             }
 
+            // Format title and description to Title Case
+            $formattedTitle = TitleFormatter::formatTitle($request->title);
+            $formattedDescription = $request->description ? TitleFormatter::formatDescription($request->description) : null;
+
             // Create quiz
             $quizId = DB::table('quizzes')->insertGetId([
                 'course_id' => $request->course_id,
-                'title' => $request->title,
-                'description' => $request->description ?? null,
+                'title' => $formattedTitle,
+                'description' => $formattedDescription,
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
@@ -85,13 +90,36 @@ class QuizController extends Controller
     public function getQuizzesByCourse($courseId)
     {
         try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $payload = JWTAuth::parseToken()->getPayload();
+            $userRole = $payload->get('role') ?? 'student';
+            $userId = is_object($user) ? $user->id : $user['id'];
+
             $quizzes = DB::table('quizzes')
                 ->where('course_id', $courseId)
                 ->select('id', 'title', 'description', 'course_id', 'created_at')
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            return response()->json(['quizzes' => $quizzes]);
+            // Include student attempts if user is a student
+            $attempts = [];
+            if ($userRole === 'student') {
+                $quizIds = $quizzes->pluck('id')->toArray();
+                if (!empty($quizIds)) {
+                    $attemptsData = DB::table('quiz_attempts')
+                        ->whereIn('quiz_id', $quizIds)
+                        ->where('student_id', $userId)
+                        ->select('quiz_id', 'score', 'total_points', 'percentage', 'completed_at')
+                        ->get()
+                        ->keyBy('quiz_id');
+                    $attempts = $attemptsData->toArray();
+                }
+            }
+
+            return response()->json([
+                'quizzes' => $quizzes,
+                'attempts' => $attempts
+            ]);
         } catch (\Exception $e) {
             \Log::error('Error fetching quizzes: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to fetch quizzes'], 500);
@@ -104,6 +132,10 @@ class QuizController extends Controller
     public function show($id)
     {
         try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $payload = JWTAuth::parseToken()->getPayload();
+            $userRole = $payload->get('role') ?? 'student';
+            
             $quiz = DB::table('quizzes')->where('id', $id)->first();
 
             if (!$quiz) {
@@ -111,9 +143,15 @@ class QuizController extends Controller
                 return response()->json(['error' => 'Quiz not found'], 404);
             }
 
+            // Include correct_answer only for teachers and admins
+            $isTeacherOrAdmin = in_array($userRole, ['teacher', 'admin']);
+            $selectFields = $isTeacherOrAdmin 
+                ? ['id', 'question', 'options', 'correct_answer', 'points']
+                : ['id', 'question', 'options', 'points'];
+
             $questions = DB::table('quiz_questions')
                 ->where('quiz_id', $id)
-                ->select('id', 'question', 'options', 'correct_answer', 'points')
+                ->select($selectFields)
                 ->orderBy('id', 'asc')
                 ->get();
 
@@ -140,7 +178,9 @@ class QuizController extends Controller
 
             \Log::info('Quiz loaded successfully', [
                 'quiz_id' => $id,
-                'questions_count' => $questions->count()
+                'questions_count' => $questions->count(),
+                'user_role' => $userRole,
+                'includes_answers' => $isTeacherOrAdmin
             ]);
 
             return response()->json([

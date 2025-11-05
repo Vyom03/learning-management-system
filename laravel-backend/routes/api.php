@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\ForumController;
 use App\Http\Controllers\Api\QuizController;
+use App\Http\Controllers\Api\VideoController;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 /*
@@ -51,8 +52,8 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/courses', [CourseController::class, 'index']);
     Route::get('/courses/{id}', [CourseController::class, 'show']);
     
-    // Course management (admin only for create, teacher/admin for update/delete)
-    Route::post('/courses', [CourseController::class, 'store']); // Admin only
+    // Course management (courses are created in Student Management System)
+    // Route::post('/courses', [CourseController::class, 'store']); // Removed - courses created in SMS
     Route::put('/courses/{id}', [CourseController::class, 'update']); // Teacher/Admin
     Route::delete('/courses/{id}', [CourseController::class, 'destroy']); // Teacher/Admin
 
@@ -74,6 +75,14 @@ Route::middleware('auth:api')->group(function () {
 
     // Certificates
     Route::get('/certificates/my-certificates', [CertificateController::class, 'myCertificates']); // Student only
+
+    // Videos
+    Route::post('/videos', [VideoController::class, 'store']); // Teacher only
+    Route::get('/videos/course/{courseId}', [VideoController::class, 'getVideosByCourse']);
+    Route::get('/videos/{id}', [VideoController::class, 'show']);
+    Route::get('/videos/{id}/analytics', [VideoController::class, 'getVideoAnalytics']); // Teacher/Admin only
+    Route::post('/videos/{id}/watch-progress', [VideoController::class, 'updateWatchProgress']); // Student only
+    Route::get('/videos/course/{courseId}/progress', [VideoController::class, 'getStudentProgress']); // Student only
 
     // TODO: Add other routes
     // - Grades

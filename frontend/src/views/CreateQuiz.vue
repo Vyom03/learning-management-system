@@ -17,7 +17,11 @@
                 type="text"
                 required
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="e.g., Introduction to JavaScript"
               />
+              <p class="mt-1 text-xs text-gray-500">
+                Title will be automatically formatted to Title Case (e.g., "introduction to javascript" → "Introduction To Javascript")
+              </p>
             </div>
 
             <div>
@@ -29,7 +33,11 @@
                 v-model="form.description"
                 rows="3"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Brief description of the quiz"
               ></textarea>
+              <p class="mt-1 text-xs text-gray-500">
+                Description will be automatically formatted to Title Case
+              </p>
             </div>
 
             <div>
@@ -79,15 +87,17 @@
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium mb-2">Correct Answer (0-3)</label>
-                    <input
+                    <label class="block text-sm font-medium mb-2">Correct Answer (0-{{ question.options.length - 1 }})</label>
+                    <select
                       v-model.number="question.correct_answer"
-                      type="number"
-                      min="0"
-                      max="3"
                       required
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    >
+                      <option v-for="(option, optIndex) in question.options" :key="optIndex" :value="optIndex">
+                        Option {{ optIndex + 1 }}: {{ option || '(empty)' }}
+                      </option>
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500">Select which option is the correct answer</p>
                   </div>
 
                   <div>

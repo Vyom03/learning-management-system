@@ -67,8 +67,8 @@
               </div>
             </div>
 
-            <!-- Remember Me & Forgot Password -->
-            <div class="flex items-center justify-between">
+            <!-- Remember Me -->
+            <div class="flex items-center">
               <label for="remember_me" class="inline-flex items-center cursor-pointer">
                 <input
                   id="remember_me"
@@ -78,10 +78,6 @@
                 />
                 <span class="ml-2 text-sm text-gray-600 hover:text-gray-900">Remember me</span>
               </label>
-
-              <a href="#" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                Forgot password?
-              </a>
             </div>
 
             <!-- Error Message -->
